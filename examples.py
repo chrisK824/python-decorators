@@ -32,9 +32,9 @@ def count_function_logging(limit_number, step=1):
     return
 
 
-@email_on_failure(sender_email="christos.karvouniaris247@gmail.com",
-                  password="<an app password here for gmail>",
-                  recipient_email="christos.karvouniaris247@gmail.com")
+@email_on_failure(sender_email="<sender gmail here>",
+                  password="<an app password here for sender gmail>",
+                  recipient_email="recipient gmail here")
 def count_function_email_exception(limit_number, step=1):
     counter = 0
     while counter < limit_number:
