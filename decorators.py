@@ -1,4 +1,4 @@
-import time
+from time import sleep
 from functools import wraps
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -8,28 +8,30 @@ from email.mime.text import MIMEText
 import asyncio
 from datetime import datetime
 
+
 # retry decorator function
-def retry(max_tries=3, delay_seconds=1):
+def retry_upon_exceptions(exceptions, max_retries=3, delay_seconds=1):
     def decorator_retry(func):
         @wraps(func)
         def wrapper_retry(*args, **kwargs):
             tries = 0
-            while tries < max_tries:
+            while tries < max_retries:
                 try:
                     return func(*args, **kwargs)
-                except Exception as e:
-                    logging.warning(f"Function {func.__name__} failed with an exception, "
+                except exceptions as exception:
+                    logging.warning(f"Function {func.__name__} failed with an "
+                                    f"exception {exception.__class__.__name__}, "
                                     f"retrying in {delay_seconds} seconds")
                     tries += 1
-                    if tries == max_tries:
-                        raise e
-                    time.sleep(delay_seconds)
+                    if tries == max_retries:
+                        raise exception
+                    sleep(delay_seconds)
         return wrapper_retry
     return decorator_retry
 
 
 # manual cache decorator function
-def memoize(func):
+def custom_cache(func):
     cache = {}
 
     def wrapper(*args):
@@ -45,10 +47,11 @@ def memoize(func):
 # timing decorator function
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
-        start_time = time.time()
+        start_time = datetime.utcnow()
         result = func(*args, **kwargs)
-        end_time = time.time()
-        logging.info(f"Function {func.__name__} took {end_time - start_time} seconds to run.")
+        end_time = datetime.utcnow()
+        logging.info(f"Function {func.__name__} took "
+                     f"{round((end_time - start_time).total_seconds(), 3)} seconds to run.")
         return result
     return wrapper
 
@@ -66,10 +69,11 @@ def async_timing_decorator(func):
         start_time = datetime.utcnow()
         result = await process(func, *args, **params)
         end_time = datetime.utcnow()
-        logging.info(f"Function {func.__name__} took {round((end_time - start_time).total_seconds(), 3)} seconds to run.")
+        logging.info(f"Function {func.__name__} took "
+                     f"{round((end_time - start_time).total_seconds(), 3)} seconds to run.")
         return result
-
     return wrapper
+
 
 # log execution decorator function
 def log_execution(func):
@@ -104,9 +108,7 @@ def email_on_failure(sender_email, password, recipient_email):
                 with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
                     smtp.login(sender_email, password)
                     smtp.sendmail(sender_email, recipient_email, message.as_string())
-
                 # re-raise the exception
                 raise
-
         return wrapper
     return decorator

@@ -1,10 +1,12 @@
-import datetime
-
-from decorators import memoize, log_execution, timing_decorator, retry, \
-    email_on_failure, async_timing_decorator
-from time import sleep
-import logging
+from datetime import datetime
 import asyncio
+import logging
+from time import sleep
+from random import randint
+
+from decorators import custom_cache, log_execution, \
+    timing_decorator, retry_upon_exceptions, \
+    email_on_failure, async_timing_decorator
 
 
 @timing_decorator
@@ -25,13 +27,15 @@ async def async_count_function_timing(limit_number, step=1):
     return
 
 
-@retry(max_tries=3, delay_seconds=1)
-def count_function_retry(limit_number, step=1):
-    counter = 0
-    while counter < limit_number:
-        counter += step
-        sleep(counter)
-    raise ValueError(f"Exceeded limit {limit_number}")
+@retry_upon_exceptions(exceptions=(ValueError, TypeError),
+                       max_retries=10, delay_seconds=1)
+def raising_exception_func():
+    random_num = randint(1, 50)
+    if random_num % 2 == 0:
+        raise ValueError("Dummy message on ValueError")
+    elif random_num % 3 == 0:
+        raise TypeError("Dummy message on TypeError")
+    raise KeyError("Dummy message on KeyError")
 
 
 @log_execution
@@ -61,7 +65,7 @@ def fibonacci_no_cache(n):
         return fibonacci_no_cache(n-1) + fibonacci_no_cache(n-2)
 
 
-@memoize
+@custom_cache
 def fibonacci_w_cache(n):
     if n <= 1:
         return n
@@ -78,28 +82,32 @@ logging.info("Calling function count_function_logging")
 count_function_logging(4, step=1)
 
 print("\n")
-logging.info("Calling function count_function_retry")
+logging.info("Calling function raising_exception_func")
 try:
-    count_function_retry(5, step=1)
-except ValueError as e:
-    logging.info(e)
+    raising_exception_func()
+except KeyError as exc:
+    logging.warning(f"Caught exception after retry: {exc}")
 
 
 print("\n")
 logging.info(f"Calling function fibonacci_no_cache")
-fibonacci_first_numbers = 40
-start = datetime.datetime.utcnow()
+fibonacci_first_numbers = 50
+start = datetime.utcnow()
 result = fibonacci_no_cache(fibonacci_first_numbers)
-end = datetime.datetime.utcnow()
-logging.info(f"Fibonacci without cache for first {fibonacci_first_numbers} took {(end-start).total_seconds()} seconds, "
+end = datetime.utcnow()
+logging.info(f"Calculation without cache for \n"
+             f"{fibonacci_first_numbers}th fibonacci number took \n"
+             f"{(end-start).total_seconds()} seconds,\n"
              f"result is {result}")
 
 print("\n")
 logging.info(f"Calling function fibonacci_w_cache")
-start = datetime.datetime.utcnow()
+start = datetime.utcnow()
 result = fibonacci_w_cache(fibonacci_first_numbers)
-end = datetime.datetime.utcnow()
-logging.info(f"Fibonacci with cache for first {fibonacci_first_numbers} took {(end-start).total_seconds()} seconds, "
+end = datetime.utcnow()
+logging.info(f"Calculation with cache for \n"
+             f"{fibonacci_first_numbers}th fibonacci number took \n"
+             f"{(end-start).total_seconds()} seconds, \n"
              f"result is {result}")
 
 print("\n")
