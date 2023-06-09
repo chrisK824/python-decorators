@@ -5,7 +5,8 @@ logging.basicConfig(level=logging.INFO)
 import smtplib
 import traceback
 from email.mime.text import MIMEText
-
+import asyncio
+from datetime import datetime
 
 # retry decorator function
 def retry(max_tries=3, delay_seconds=1):
@@ -47,10 +48,28 @@ def timing_decorator(func):
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
-        print(f"Function {func.__name__} took {end_time - start_time} seconds to run.")
+        logging.info(f"Function {func.__name__} took {end_time - start_time} seconds to run.")
         return result
     return wrapper
 
+
+def async_timing_decorator(func):
+    async def process(func, *args, **params):
+        if asyncio.iscoroutinefunction(func):
+            logging.info("This is a coroutine")
+            return await func(*args, **params)
+        else:
+            logging.info("This is a function")
+            return func(*args, **params)
+
+    async def wrapper(*args, **params):
+        start_time = datetime.utcnow()
+        result = await process(func, *args, **params)
+        end_time = datetime.utcnow()
+        logging.info(f"Function {func.__name__} took {round((end_time - start_time).total_seconds(), 3)} seconds to run.")
+        return result
+
+    return wrapper
 
 # log execution decorator function
 def log_execution(func):
