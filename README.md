@@ -1,7 +1,3 @@
-# python-decorators
+# Collection of useful decorators in python
 
-## Usefull decorator functions in python
-
-
-### Sources
-- https://towardsdatascience.com/python-decorators-for-data-science-6913f717669a
+Examples of usage can be found in `examples.py`
