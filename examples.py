@@ -39,7 +39,7 @@ def raising_exception_func():
 
 
 @log_execution
-def count_function_logging(limit_number, step=1):
+def function_logging(limit_number, step, dummy_kwarg, dummy_kwarg_2):
     counter = 0
     while counter < limit_number:
         counter += step
@@ -50,7 +50,7 @@ def count_function_logging(limit_number, step=1):
 @email_on_failure(sender_email="<sender gmail here>",
                   password="<an app password here for sender gmail>",
                   recipient_email="recipient gmail here")
-def count_function_email_exception(limit_number, step=1):
+def critical_function(limit_number, step=1):
     counter = 0
     while counter < limit_number:
         counter += step
@@ -78,8 +78,8 @@ logging.info("Calling function count_function_timing")
 count_function_timing(3, step=1)
 
 print("\n")
-logging.info("Calling function count_function_logging")
-count_function_logging(4, step=1)
+logging.info("Calling function function_logging")
+function_logging(4, 1, dummy_kwarg="some string", dummy_kwarg_2=3)
 
 print("\n")
 logging.info("Calling function raising_exception_func")
@@ -111,6 +111,10 @@ logging.info(f"Calculation with cache for \n"
              f"result is {result}")
 
 print("\n")
-logging.info("Calling function async_count_function_timing")
+logging.info("Calling function count_function_timing")
+count_function_timing(3, 1)
+
+
+logging.info("Calling coroutine async_count_function_timing")
 task = async_count_function_timing(3, 1)
 asyncio.run(task)

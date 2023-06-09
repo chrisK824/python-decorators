@@ -69,9 +69,9 @@ def async_timing_decorator(func):
         start_time = datetime.utcnow()
         result = await process(func, *args, **params)
         end_time = datetime.utcnow()
-        logging.info(f"Function {func.__name__} took "
-                     f"{round((end_time - start_time).total_seconds(), 3)} seconds to run.")
+        logging.info(f"Function {func.__name__} took {round((end_time - start_time).total_seconds(), 3)} seconds to run.")
         return result
+
     return wrapper
 
 
@@ -95,8 +95,11 @@ def email_on_failure(sender_email, password, recipient_email):
                 return func(*args, **kwargs)
             except Exception as e:
                 # format the error message and traceback
-                logging.error(f"Exception caught, sending an email to {recipient_email} via account {sender_email}")
-                err_msg = f"Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+                logging.error(f"Exception caught, "
+                              f"sending an email to {recipient_email} "
+                              f"via account {sender_email}")
+                err_msg = f"Error: {str(e)}\n\nT" \
+                          f"raceback:\n{traceback.format_exc()}"
 
                 # create the email message
                 message = MIMEText(err_msg)
