@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, perf_counter
 from functools import wraps
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -126,3 +126,22 @@ def call_counter(func):
         return result
     wrapper.count = 0
     return wrapper
+
+
+def rate_limited(max_per_second):
+    min_interval = 1.0 / float(max_per_second)
+
+    def decorate(func):
+        last_ts = datetime.utcnow().timestamp()
+
+        def rate_limited_function(*args, **kargs):
+            nonlocal last_ts
+            elapsed = datetime.utcnow().timestamp() - last_ts
+            left_to_wait = min_interval - elapsed
+            if left_to_wait > 0:
+                sleep(left_to_wait)
+            ret = func(*args, **kargs)
+            last_ts = datetime.utcnow().timestamp()
+            return ret
+        return rate_limited_function
+    return decorate

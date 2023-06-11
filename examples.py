@@ -6,7 +6,8 @@ from random import randint
 
 from decorators import custom_cache, log_execution, \
     timing_decorator, retry_upon_exceptions, \
-    email_on_failure, async_timing_decorator, call_counter
+    email_on_failure, async_timing_decorator, call_counter, \
+    rate_limited
 
 
 @timing_decorator
@@ -78,8 +79,20 @@ def called_counter_func():
     pass
 
 
+@rate_limited(max_per_second=2)
+def call_with_rate_limit():
+    pass
+
 # execution after this
 
+
+print("\n")
+logging.info("Calling function call_with_rate_limit "
+             "with rate of 2 executions per second")
+for i in range(0, 10):
+    start = datetime.utcnow()
+    call_with_rate_limit()
+    print(f"Seconds elapsed: {(datetime.utcnow() - start).total_seconds()}")
 
 print("\n")
 logging.info("Calling function count_function_timing")
