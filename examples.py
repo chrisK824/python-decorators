@@ -8,6 +8,23 @@ from decorators import custom_cache, log_execution, \
     timing_decorator, retry_upon_exceptions, \
     email_on_failure, async_timing_decorator, call_counter, \
     rate_limited
+from atexit import register
+from deprecation import deprecated
+
+
+@register
+def goodbye_function():
+    logging.info(f"Function {goodbye_function.__name__} is automatically called at exit")
+
+
+@deprecated(
+    deprecated_in="2.0.0",
+    removed_in="2.1.0",
+    current_version="2.0.9",
+    details="Do not use this function moving forward"
+)
+def deprecated_function():
+    pass
 
 
 @timing_decorator
@@ -83,8 +100,11 @@ def called_counter_func():
 def call_with_rate_limit():
     pass
 
-# execution after this
 
+# execution after this
+print("\n")
+logging.info("Calling function deprecated_function")
+deprecated_function()
 
 print("\n")
 logging.info("Calling function call_with_rate_limit "
