@@ -6,7 +6,7 @@ from random import randint
 
 from decorators import custom_cache, log_execution, \
     timing_decorator, retry_upon_exceptions, \
-    email_on_failure, async_timing_decorator
+    email_on_failure, async_timing_decorator, call_counter
 
 
 @timing_decorator
@@ -73,13 +73,32 @@ def fibonacci_w_cache(n):
         return fibonacci_w_cache(n-1) + fibonacci_w_cache(n-2)
 
 
+@call_counter
+def called_counter_func():
+    pass
+
+
+# execution after this
+
+
 print("\n")
 logging.info("Calling function count_function_timing")
-count_function_timing(3, step=1)
+count_function_timing(2, step=1)
+
+print("\n")
+logging.info("Calling coroutine async_count_function_timing")
+task = async_count_function_timing(2, 1)
+asyncio.run(task)
 
 print("\n")
 logging.info("Calling function function_logging")
 function_logging(4, 1, dummy_kwarg="some string", dummy_kwarg_2=3)
+
+print("\n")
+logging.info("Calling function called_counter_func")
+for i in range(0, 2):
+    called_counter_func()
+
 
 print("\n")
 logging.info("Calling function raising_exception_func")
@@ -91,7 +110,7 @@ except KeyError as exc:
 
 print("\n")
 logging.info(f"Calling function fibonacci_no_cache")
-fibonacci_first_numbers = 50
+fibonacci_first_numbers = 30
 start = datetime.utcnow()
 result = fibonacci_no_cache(fibonacci_first_numbers)
 end = datetime.utcnow()
@@ -110,11 +129,5 @@ logging.info(f"Calculation with cache for \n"
              f"{(end-start).total_seconds()} seconds, \n"
              f"result is {result}")
 
-print("\n")
-logging.info("Calling function count_function_timing")
-count_function_timing(3, 1)
 
 
-logging.info("Calling coroutine async_count_function_timing")
-task = async_count_function_timing(3, 1)
-asyncio.run(task)

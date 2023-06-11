@@ -115,3 +115,14 @@ def email_on_failure(sender_email, password, recipient_email):
                 raise
         return wrapper
     return decorator
+
+
+def call_counter(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.count += 1
+        result = func(*args, **kwargs)
+        logging.info(f'{func.__name__} has been called {wrapper.count} times')
+        return result
+    wrapper.count = 0
+    return wrapper
